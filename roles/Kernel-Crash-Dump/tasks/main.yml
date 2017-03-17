@@ -14,16 +14,32 @@
     mode: 0600
   when: ssh_server is defined and ssh_server != ''
 
+- name: register the status of /etc/kdump.conf
+  stat: path=/etc/kdump.conf
+  register: stat_conf
+
+- name: Make backup of /etc/kdump.conf if existed
+  copy: src=/etc/kdump.conf dest=/etc/kdump.conf.backup
+  when: stat_conf.stat.exists == True
+
 - name: Generate /etc/kdump.conf file
   template: src=kdump.conf.j2 dest=/etc/kdump.conf
   notify: restart kdump
+
+- name: register the status of /etc/sysconfig/kdump
+  stat: path=/etc/sysconfig/kdump
+  register: stat_conf
+
+- name: Make backup of /etc/sysconfig/kdump
+  copy: src=/etc/sysconfig/kdump dest=/etc/sysconfig/kdump.backup
+  when: stat_conf.stat.exists == True
 
 - name: Generate /etc/sysconfig/kdump file
   template: src=kdump.j2 dest=/etc/sysconfig/kdump
   notify: restart kdump
 
-- name: Disable kdump
-  service: name=kdump state=stopped enabled=no
+-- name: Disable kdump
+-  service: name=kdump state=stopped enabled=no
 
 - name: Enable kdump
   service: name=kdump state=started enabled=yes
