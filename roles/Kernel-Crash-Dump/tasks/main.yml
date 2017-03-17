@@ -34,6 +34,14 @@
   when: kexec_crash_size.stdout|int > 0
   notify: restart kdump
 
+- name: Add header to /etc/kdump.conf
+  lineinfile:
+    dest: /etc/kdump.conf
+    regexp: '# Last modified:'
+    state: present
+    insertbefore: BOF
+    line: "# Last modified: {{ ansible_date_time.date }} {{ ansible_date_time.time }}\n"
+
 - name: register the status of /etc/sysconfig/kdump
   stat: path=/etc/sysconfig/kdump
   register: stat_conf
@@ -46,6 +54,14 @@
   template: src=kdump.j2 dest=/etc/sysconfig/kdump
   when: kexec_crash_size.stdout|int > 0
   notify: restart kdump
+
+- name: Add header to /etc/sysconfig/kdump
+  lineinfile:
+    dest: /etc/sysconfig/kdump
+    regexp: '# Last modified:'
+    state: present
+    insertbefore: BOF
+    line: "# Last modified: {{ ansible_date_time.date }} {{ ansible_date_time.time }}\n"
 
 - name: Enable kdump
   service: name=kdump state=started enabled=yes
