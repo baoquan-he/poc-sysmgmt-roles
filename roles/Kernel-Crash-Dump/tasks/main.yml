@@ -5,6 +5,13 @@
 - name: Install kexec-tools
   package: name=kexec-tools state=present
 
+- name: Find out reserved memory for the crash kernel
+  command: cat /sys/kernel/kexec_crash_size
+  register: kexec_crash_size
+
+- name: Show value of kexec_crash_size for debugging
+  debug: var=kexec_crash_size verbosity=0
+
 - name: copy id_rsa
   copy:
     src: /root/.ssh/kdump_id_rsa
@@ -24,6 +31,7 @@
 
 - name: Generate /etc/kdump.conf file
   template: src=kdump.conf.j2 dest=/etc/kdump.conf
+  when: kexec_crash_size.stdout|int > 0
   notify: restart kdump
 
 - name: register the status of /etc/sysconfig/kdump
@@ -36,6 +44,7 @@
 
 - name: Generate /etc/sysconfig/kdump file
   template: src=kdump.j2 dest=/etc/sysconfig/kdump
+  when: kexec_crash_size.stdout|int > 0
   notify: restart kdump
 
 -- name: Disable kdump
