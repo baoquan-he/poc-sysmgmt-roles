@@ -47,9 +47,6 @@
   when: kexec_crash_size.stdout|int > 0
   notify: restart kdump
 
--- name: Disable kdump
--  service: name=kdump state=stopped enabled=no
-
 - name: Enable kdump
   service: name=kdump state=started enabled=yes
 

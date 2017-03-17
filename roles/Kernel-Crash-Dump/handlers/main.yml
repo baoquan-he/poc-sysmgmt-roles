@@ -1,2 +1,6 @@
 - name: restart kdump
   service: "name=kdump state=restarted"
+
+- name: disable kdump
+-  service: name=kdump state=stopped enabled=no
+
