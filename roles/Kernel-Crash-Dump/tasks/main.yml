@@ -31,8 +31,7 @@
 
 - name: Generate /etc/kdump.conf file
   template: src=kdump.conf.j2 dest=/etc/kdump.conf
-  when: kexec_crash_size.stdout|int > 0 and kdump_conf_changed
-  notify: restart kdump
+  when: kdump_conf_changed
 
 - name: Add header to /etc/kdump.conf
   lineinfile:
@@ -53,8 +52,7 @@
 
 - name: Generate /etc/sysconfig/kdump file
   template: src=kdump.j2 dest=/etc/sysconfig/kdump
-  when: kexec_crash_size.stdout|int > 0 and kdump_sysconfig_changed
-  notify: restart kdump
+  when: kdump_sysconfig_changed
 
 - name: Add header to /etc/sysconfig/kdump
   lineinfile:
@@ -64,6 +62,10 @@
     insertbefore: BOF
     line: "# Last modified: {{ ansible_date_time.date }} {{ ansible_date_time.time }}\n"
   when: kdump_sysconfig_changed
+
+- name: Restart kdump
+  service: name=kdump state=restarted enabled=yes
+  when: (kdump_conf_changed or kdump_sysconfig_changed) and kexec_crash_size.stdout|int > 0
 
 - name: Enable kdump
   service: name=kdump state=started enabled=yes
