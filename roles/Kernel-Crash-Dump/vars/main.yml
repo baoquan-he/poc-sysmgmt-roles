@@ -6,3 +6,5 @@
 
 dump_path: /boot
 ssh_private_key: /root/.ssh/kdump_id_rsa
+kdump_conf_changed: True
+kdump_sysconfig_changed: True

@@ -27,11 +27,11 @@
 
 - name: Make backup of /etc/kdump.conf if existed
   copy: src=/etc/kdump.conf dest=/etc/kdump.conf.backup
-  when: stat_conf.stat.exists == True
+  when: stat_conf.stat.exists == True and kdump_conf_changed
 
 - name: Generate /etc/kdump.conf file
   template: src=kdump.conf.j2 dest=/etc/kdump.conf
-  when: kexec_crash_size.stdout|int > 0
+  when: kexec_crash_size.stdout|int > 0 and kdump_conf_changed
   notify: restart kdump
 
 - name: Add header to /etc/kdump.conf
@@ -41,6 +41,7 @@
     state: present
     insertbefore: BOF
     line: "# Last modified: {{ ansible_date_time.date }} {{ ansible_date_time.time }}\n"
+  when: kdump_conf_changed
 
 - name: register the status of /etc/sysconfig/kdump
   stat: path=/etc/sysconfig/kdump
@@ -48,11 +49,11 @@
 
 - name: Make backup of /etc/sysconfig/kdump
   copy: src=/etc/sysconfig/kdump dest=/etc/sysconfig/kdump.backup
-  when: stat_conf.stat.exists == True
+  when: stat_conf.stat.exists == True and kdump_sysconfig_changed
 
 - name: Generate /etc/sysconfig/kdump file
   template: src=kdump.j2 dest=/etc/sysconfig/kdump
-  when: kexec_crash_size.stdout|int > 0
+  when: kexec_crash_size.stdout|int > 0 and kdump_sysconfig_changed
   notify: restart kdump
 
 - name: Add header to /etc/sysconfig/kdump
@@ -62,6 +63,7 @@
     state: present
     insertbefore: BOF
     line: "# Last modified: {{ ansible_date_time.date }} {{ ansible_date_time.time }}\n"
+  when: kdump_sysconfig_changed
 
 - name: Enable kdump
   service: name=kdump state=started enabled=yes
